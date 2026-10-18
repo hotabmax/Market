@@ -1,0 +1,170 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}{{ product.name }} - ФрешМаркет{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav aria-label="breadcrumb" class="py-3 bg-light">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop:catalog' %}" class="text-decoration-none">Каталог</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop:category_detail' product.category.slug %}" class="text-decoration-none">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row g-5">
+        <!-- Изображение -->
+        <div class="col-lg-6">
+            <div class="product-main-image">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
+                {% else %}
+                <div class="placeholder-product d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Информация о товаре -->
+        <div class="col-lg-6">
+            <small class="text-primary fw-bold">{{ product.category.name }}</small>
+            <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+
+            {% if product.short_description %}
+            <p class="text-muted">{{ product.short_description }}</p>
+            {% endif %}
+
+            {% if product.description %}
+            <div class="product-full-description mb-4">
+                <p>{{ product.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Цена и добавление в корзину -->
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-baseline mb-3">
+                        {% if product.is_on_sale %}
+                        <h2 class="fw-bold text-danger mb-0 me-3">{{ product.price|floatformat:0 }} ₽</h2>
+                        <h4 class="text-muted text-decoration-line-through mb-0">{{ product.old_price|floatformat:0 }} ₽</h4>
+                        <span class="badge bg-danger ms-3">Скидка {{ product.discount_percentage }}%</span>
+                        {% else %}
+                        <h2 class="fw-bold mb-0">{{ product.price|floatformat:0 }} ₽</h2>
+                        {% endif %}
+                    </div>
+
+                    {% if product.weight %}
+                    <p class="mb-3"><i class="fas fa-weight-hanging me-2 text-muted"></i>{{ product.weight }}</p>
+                    {% endif %}
+
+                    <div class="d-flex align-items-center gap-3">
+                        {% if product.is_in_stock %}
+                        <form action="{% url 'shop:cart_add' product.slug %}" method="post" class="d-flex align-items-center gap-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-cart-plus me-2"></i>В корзину
+                            </button>
+                        </form>
+                        <span class="text-success">
+                            <i class="fas fa-check-circle me-1"></i>В наличии ({{ product.stock }} шт.)
+                        </span>
+                        {% else %}
+                        <button class="btn btn-secondary btn-lg px-5" disabled>
+                            <i class="fas fa-times-circle me-2"></i>Нет в наличии
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Характеристики -->
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">Характеристики</h5>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 40%;">Категория</td>
+                            <td><a href="{% url 'shop:category_detail' product.category.slug %}">{{ product.category.name }}</a></td>
+                        </tr>
+                        {% if product.weight %}
+                        <tr>
+                            <td class="text-muted">Вес/Объём</td>
+                            <td>{{ product.weight }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="text-muted">Остаток</td>
+                            <td>
+                                {% if product.is_in_stock %}
+                                <span class="text-success">{{ product.stock }} шт.</span>
+                                {% else %}
+                                <span class="text-danger">Нет в наличии</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Дата добавления</td>
+                            <td>{{ product.created_at|date:"d.m.Y" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Похожие товары -->
+    {% if similar_products %}
+    <section class="mt-5">
+        <h3 class="fw-bold mb-4">Похожие товары</h3>
+        <div class="row g-4">
+            {% for product in similar_products %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="product-card h-100">
+                    <div class="position-relative">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                        {% else %}
+                        <div class="product-image placeholder-product">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                        {% if product.is_on_sale %}
+                        <span class="sale-badge">-{{ product.discount_percentage }}%</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-card-body">
+                        <h6 class="mt-1">
+                            <a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                        </h6>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="fw-bold">
+                                {% if product.is_on_sale %}
+                                <span class="text-danger">{{ product.price|floatformat:0 }} ₽</span>
+                                <small class="text-muted text-decoration-line-through">{{ product.old_price|floatformat:0 }} ₽</small>
+                                {% else %}
+                                {{ product.price|floatformat:0 }} ₽
+                                {% endif %}
+                            </div>
+                            {% if product.is_in_stock %}
+                            <form action="{% url 'shop:cart_add' product.slug %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm rounded-circle">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Корзина - ФрешМаркет{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav aria-label="breadcrumb" class="py-3 bg-light">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop:catalog' %}" class="text-decoration-none">Каталог</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Корзина</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <h1 class="fw-bold mb-4"><i class="fas fa-shopping-cart me-2"></i>Корзина</h1>
+
+    {% if cart_items %}
+    <div class="row g-4">
+        <!-- Список товаров -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    {% for item in cart_items %}
+                    <div class="cart-item d-flex align-items-center gap-3 p-4 border-bottom">
+                        <div class="cart-item-image" style="width: 80px; height: 80px; flex-shrink: 0;">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <div class="placeholder-product d-flex align-items-center justify-content-center rounded" style="width: 100%; height: 100%;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <a href="{{ item.product.get_absolute_url }}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
+                            </h6>
+                            {% if item.product.weight %}
+                            <small class="text-muted"><i class="fas fa-weight-hanging me-1"></i>{{ item.product.weight }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <form action="{% url 'shop:cart_update' %}" method="post" class="d-flex align-items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="cart_item_id" value="{{ item.product.id }}">
+                                <input type="number" name="quantity_{{ item.product.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="form-control form-control-sm" style="width: 70px;" onchange="this.form.submit()">
+                            </form>
+                            <span class="fw-bold" style="min-width: 80px;">{{ item.total_price|floatformat:0 }} ₽</span>
+                        </div>
+                        <form action="{% url 'shop:cart_remove' item.product.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary mt-3">
+                <i class="fas fa-arrow-left me-1"></i> Продолжить покупки
+            </a>
+        </div>
+
+        <!-- Итого -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Итого</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Товары:</span>
+                        <span>{{ total_items }} шт.</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <span class="fw-bold">Итого:</span>
+                        <span class="fw-bold fs-5 text-primary">{{ total_price|floatformat:0 }} ₽</span>
+                    </div>
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-shopping-bag me-2"></i>Оформить заказ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+        <h4>Ваша корзина пуста</h4>
+        <p class="text-muted mb-4">Добавьте товары из каталога, чтобы оформить заказ</p>
+        <a href="{% url 'shop:catalog' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-shopping-basket me-2"></i>Перейти в каталог
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

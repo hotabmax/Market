@@ -1,0 +1,164 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Каталог продуктов - ФрешМаркет{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav aria-label="breadcrumb" class="py-3 bg-light">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if selected_category %}{{ selected_category.name }}{% else %}Каталог{% endif %}
+            </li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Боковая панель -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px; z-index: 1;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        {% if selected_category %}
+                        <input type="hidden" name="category" value="{{ selected_category.slug }}">
+                        {% endif %}
+
+                        <!-- Поиск -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Поиск</label>
+                            <input type="text" name="q" class="form-control" placeholder="Название продукта..." value="{{ search_form.query.value|default:'' }}">
+                        </div>
+
+                        <!-- Категория -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Категория</label>
+                            <select name="category" class="form-select">
+                                <option value="">Все категории</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.slug }}" {% if selected_category and selected_category.slug == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Цена -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Цена, ₽</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control" placeholder="От" value="{{ search_form.min_price.value|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control" placeholder="До" value="{{ search_form.max_price.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i> Применить
+                        </button>
+                        <a href="{% if selected_category %}{% url 'shop:category_detail' selected_category.slug %}{% else %}{% url 'shop:catalog' %}{% endif %}" class="btn btn-outline-secondary w-100 mt-2">
+                            <i class="fas fa-times me-1"></i> Сбросить
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Каталог товаров -->
+        <div class="col-lg-9">
+            <!-- Заголовок и сортировка -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        {% if selected_category %}{{ selected_category.name }}{% else %}Все товары{% endif %}
+                    </h2>
+                    <p class="text-muted mb-0">{{ products.count }} товаров</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="text-muted mb-0">Сортировка:</label>
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.href=this.value">
+                        <option value="?sort=default" {% if sort_by == 'default' %}selected{% endif %}>По умолчанию</option>
+                        <option value="?sort=price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Сначала дешёвые</option>
+                        <option value="?sort=price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Сначала дорогие</option>
+                        <option value="?sort=name" {% if sort_by == 'name' %}selected{% endif %}>По названию</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Сетка товаров -->
+            {% if products %}
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-sm-6 col-xl-4">
+                    <div class="product-card h-100">
+                        <div class="position-relative">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                            {% else %}
+                            <div class="product-image placeholder-product">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                            {% if product.is_on_sale %}
+                            <span class="sale-badge">-{{ product.discount_percentage }}%</span>
+                            {% endif %}
+                            {% if not product.is_in_stock %}
+                            <span class="out-of-stock-badge">Нет в наличии</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            <small class="text-muted">{{ product.category.name }}</small>
+                            <h6 class="mt-1">
+                                <a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                            </h6>
+                            {% if product.short_description %}
+                            <p class="product-description">{{ product.short_description|truncatewords:15 }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="price-block">
+                                    {% if product.is_on_sale %}
+                                    <small class="text-muted text-decoration-line-through">{{ product.old_price|floatformat:0 }} ₽</small>
+                                    <div class="fw-bold text-danger">{{ product.price|floatformat:0 }} ₽</div>
+                                    {% else %}
+                                    <div class="fw-bold">{{ product.price|floatformat:0 }} ₽</div>
+                                    {% endif %}
+                                </div>
+                                {% if product.is_in_stock %}
+                                <form action="{% url 'shop:cart_add' product.slug %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary btn-sm rounded-circle" title="В корзину">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            {% if product.weight %}
+                            <small class="text-muted mt-1 d-block">
+                                <i class="fas fa-weight-hanging me-1"></i>{{ product.weight }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                <h4>Товары не найдены</h4>
+                <p class="text-muted">Попробуйте изменить параметры поиска или фильтры</p>
+                <a href="{% url 'shop:catalog' %}" class="btn btn-primary mt-2">
+                    <i class="fas fa-home me-1"></i> Вернуться в каталог
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

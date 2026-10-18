@@ -1,0 +1,259 @@
+/* ===== ОБЩИЕ СТИЛИ ===== */
+:root {
+    --primary-color: #0d6efd;
+    --primary-dark: #0a58ca;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--dark-text);
+    background-color: #fff;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* ===== НАВИГАЦИЯ ===== */
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* ===== ГЕРОЙ-БАННЕР ===== */
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 50%, #084298 100%);
+    min-height: 80vh;
+    padding: 4rem 0;
+}
+
+.hero-emoji {
+    font-size: 8rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+/* ===== КАРТОЧКИ КАТЕГОРИЙ ===== */
+.category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background-color: var(--light-bg);
+}
+
+.category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #e8f4fd, #d1ecf9);
+    border-radius: 50%;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+/* ===== КАРТОЧКИ ТОВАРОВ ===== */
+.product-card {
+    border: 1px solid #e9ecef;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #fff;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: var(--light-bg);
+}
+
+.placeholder-product {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-bg);
+    color: var(--muted-text);
+    font-size: 3rem;
+}
+
+.product-card-body {
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.product-description {
+    font-size: 0.85rem;
+    color: var(--muted-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+}
+
+.price-block {
+    line-height: 1.2;
+}
+
+/* ===== БЕЙДЖИ ===== */
+.sale-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--danger-color);
+    color: #fff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.out-of-stock-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--muted-text);
+    color: #fff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* ===== КАРТОЧКИ ПРЕИМУЩЕСТВ ===== */
+.feature-card {
+    padding: 2rem 1.5rem;
+    background: #fff;
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== КОРЗИНА ===== */
+.cart-item {
+    transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+    background-color: var(--light-bg);
+}
+
+/* ===== ИНФО-БОКС ===== */
+.info-box {
+    border-left: 3px solid var(--primary-color);
+}
+
+/* ===== УСПЕШНЫЙ ЗАКАЗ ===== */
+.success-icon {
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: auto;
+        padding: 3rem 0;
+    }
+
+    .hero-emoji {
+        font-size: 4rem;
+        margin-top: 2rem;
+    }
+
+    .min-vh-75 {
+        min-height: auto;
+    }
+
+    .product-image {
+        height: 160px;
+    }
+
+    .cart-item {
+        flex-wrap: wrap;
+    }
+}
+
+/* ===== СКРОЛЛБАР ===== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
+
+/* ===== АНИМАЦИИ ===== */
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== СОЦИАЛЬНЫЕ ССЫЛКИ ===== */
+.social-links a {
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+}
+
+.social-links a:hover {
+    color: var(--primary-color) !important;
+    transform: scale(1.2);
+}

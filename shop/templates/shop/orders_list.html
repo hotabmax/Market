@@ -1,0 +1,148 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Мои заказы - ФрешМаркет{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav aria-label="breadcrumb" class="py-3 bg-light">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Мои заказы</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <h1 class="fw-bold mb-4"><i class="fas fa-box-open me-2"></i>Мои заказы</h1>
+
+    <!-- Форма поиска по email -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Введите email для просмотра заказов</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                    {{ email_form.email }}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Найти заказы
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if email and orders %}
+    <!-- Список заказов -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% for order in orders %}
+            <div class="card shadow-sm mb-3 order-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                <a href="{% url 'shop:order_detail' order.id %}" class="text-decoration-none text-dark">
+                                    Заказ #{{ order.id }}
+                                </a>
+                            </h5>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ order.created_at|date:"d.m.Y H:i" }}
+                            </small>
+                        </div>
+                        <span class="badge bg-{% if order.status == 'new' %}primary{% elif order.status == 'processing' %}warning{% elif order.status == 'shipped' %}info{% elif order.status == 'delivered' %}success{% else %}danger{% endif %} fs-6">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Товары в заказе -->
+                    <div class="order-items mb-3">
+                        {% for item in order.items.all|slice:":3" %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <small class="fw-bold">{{ item.product_name }}</small>
+                                <br>
+                                <small class="text-muted">{{ item.quantity }} шт. x {{ item.price|floatformat:0 }} ₽</small>
+                            </div>
+                            <span class="fw-bold">{{ item.total_price|floatformat:0 }} ₽</span>
+                        </div>
+                        {% endfor %}
+                        {% if order.items.count > 3 %}
+                        <p class="text-muted mb-0 mt-2">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            ещё {{ order.items.count|add:"-3" }} товар(ов)...
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <div>
+                            <span class="fw-bold fs-5 text-primary">{{ order.total_price|floatformat:0 }} ₽</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i> Подробнее
+                            </a>
+                            {% if order.status in 'new,processing' %}
+                            <form action="{% url 'shop:order_cancel' order.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Вы уверены, что хотите отменить заказ?')">
+                                    <i class="fas fa-times-circle me-1"></i> Отменить
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small align-self-center">
+                                {% if order.status == 'cancelled' %}Отменён{% else %}Нельзя отменить{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Итого -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Статистика</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Всего заказов:</span>
+                        <span class="fw-bold">{{ orders.count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Общая сумма:</span>
+                        <span class="fw-bold text-primary">{{ total_spent|floatformat:0 }} ₽</span>
+                    </div>
+                    <hr>
+                    <a href="{% url 'shop:catalog' %}" class="btn btn-primary w-100">
+                        <i class="fas fa-shopping-basket me-1"></i> Новые покупки
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif email %}
+    <!-- Заказы не найдены -->
+    <div class="alert alert-info text-center py-5">
+        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+        <h4>Заказы не найдены</h4>
+        <p class="text-muted">По email "{{ email }}" заказов не обнаружено</p>
+        <a href="{% url 'shop:catalog' %}" class="btn btn-primary mt-2">
+            <i class="fas fa-shopping-basket me-1"></i> Сделать первый заказ
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Email не введён -->
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+        <h4>Введите email для поиска заказов</h4>
+        <p class="text-muted">Укажите email, указанный при оформлении заказа</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

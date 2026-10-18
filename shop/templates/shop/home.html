@@ -1,0 +1,226 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}ФрешМаркет - Свежие продукты с доставкой{% endblock %}
+
+{% block content %}
+<!-- Герой-баннер -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-4">Свежие продукты каждый день</h1>
+                <p class="lead text-white-50 mb-4">Доставка качественных продуктов питания прямо к вашей двери. Более 1000 наименований свежих товаров.</p>
+                <a href="{% url 'shop:catalog' %}" class="btn btn-light btn-lg px-5 me-2">
+                    <i class="fas fa-shopping-basket me-2"></i>Перейти в каталог
+                </a>
+                <a href="#categories" class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-th-large me-2"></i>Категории
+                </a>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <div class="hero-emoji display-1">🥦🍎🥛🥖</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Категории -->
+<section id="categories" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Популярные категории</h2>
+            <p class="text-muted">Выберите интересующую вас категорию продуктов</p>
+        </div>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'shop:category_detail' category.slug %}" class="category-card text-center text-decoration-none">
+                    <div class="category-icon mb-3">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-box-open"></i>
+                        {% endif %}
+                    </div>
+                    <h6 class="text-dark mb-0">{{ category.name }}</h6>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Рекомендуемые товары -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">Рекомендуемые товары</h2>
+                <p class="text-muted mb-0">Лучшие предложения для вас</p>
+            </div>
+            <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary">
+                Все товары <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="product-card h-100">
+                    <div class="position-relative">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                        {% else %}
+                        <div class="product-image placeholder-product">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                        {% if product.is_on_sale %}
+                        <span class="sale-badge">-{{ product.discount_percentage }}%</span>
+                        {% endif %}
+                        {% if not product.is_in_stock %}
+                        <span class="out-of-stock-badge">Нет в наличии</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-card-body">
+                        <small class="text-muted">{{ product.category.name }}</small>
+                        <h6 class="mt-1"><a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">{{ product.name }}</a></h6>
+                        {% if product.short_description %}
+                        <p class="product-description">{{ product.short_description|truncatewords:15 }}</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="price-block">
+                                {% if product.is_on_sale %}
+                                <small class="text-muted text-decoration-line-through">{{ product.old_price|floatformat:0 }} ₽</small>
+                                <div class="fw-bold text-danger">{{ product.price|floatformat:0 }} ₽</div>
+                                {% else %}
+                                <div class="fw-bold">{{ product.price|floatformat:0 }} ₽</div>
+                                {% endif %}
+                            </div>
+                            {% if product.is_in_stock %}
+                            <form action="{% url 'shop:cart_add' product.slug %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm rounded-circle" title="В корзину">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% if product.weight %}
+                        <small class="text-muted"><i class="fas fa-weight-hanging me-1"></i>{{ product.weight }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Рекомендуемые товары пока не добавлены
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Новые товары -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">Новинки</h2>
+                <p class="text-muted mb-0">Свежие поступления</p>
+            </div>
+            <a href="{% url 'shop:catalog' %}" class="btn btn-outline-primary">
+                Все товары <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            {% for product in new_products %}
+            <div class="col-sm-6 col-lg-3">
+                <div class="product-card h-100">
+                    <div class="position-relative">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                        {% else %}
+                        <div class="product-image placeholder-product">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
+                        {% if product.is_on_sale %}
+                        <span class="sale-badge">-{{ product.discount_percentage }}%</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-card-body">
+                        <small class="text-muted">{{ product.category.name }}</small>
+                        <h6 class="mt-1"><a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">{{ product.name }}</a></h6>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="price-block">
+                                {% if product.is_on_sale %}
+                                <small class="text-muted text-decoration-line-through">{{ product.old_price|floatformat:0 }} ₽</small>
+                                <div class="fw-bold text-danger">{{ product.price|floatformat:0 }} ₽</div>
+                                {% else %}
+                                <div class="fw-bold">{{ product.price|floatformat:0 }} ₽</div>
+                                {% endif %}
+                            </div>
+                            {% if product.is_in_stock %}
+                            <form action="{% url 'shop:cart_add' product.slug %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm rounded-circle" title="В корзину">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Новые товары пока не добавлены
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Почему выбирают нас</h2>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-truck fa-3x text-primary mb-3"></i>
+                    <h5>Быстрая доставка</h5>
+                    <p class="text-muted">Доставим в день заказа по всему городу</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
+                    <h5>Гарантия качества</h5>
+                    <p class="text-muted">Только свежие и проверенные продукты</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                    <h5>Лучшие цены</h5>
+                    <p class="text-muted">Ежедневные акции и скидки</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                    <h5>Поддержка 24/7</h5>
+                    <p class="text-muted">Всегда на связи для ваших вопросов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
